@@ -1,7 +1,15 @@
 const fs = require('fs');
 const tf = require('@tensorflow/tfjs');
 
-const data = JSON.parse(fs.readFileSync('price.json'));
+// Загрузка данных из файла price.json
+const rawData = fs.readFileSync('price.json');
+const data = JSON.parse(rawData).map(candle => ({
+  open: parseFloat(candle.open),
+  high: parseFloat(candle.high),
+  low: parseFloat(candle.low),
+  close: parseFloat(candle.close),
+  volume: parseFloat(candle.volume),
+}));
 
 // Преобразуем данные в формат, который можно использовать для обучения модели
 const input = [];
