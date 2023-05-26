@@ -11,7 +11,14 @@ model.add(tf.layers.dense({ units: 64, inputShape: [4], activation: 'relu', weig
 model.add(tf.layers.dense({ units: 1, activation: 'linear', weights: [weights[2], weights[3]] }));
 
 // Загрузка данных из файла price.json
-const data = JSON.parse(fs.readFileSync('price.json'));
+const rawData = fs.readFileSync('price.json');
+const data = JSON.parse(rawData).map(candle => ({
+  open: parseFloat(candle.open),
+  high: parseFloat(candle.high),
+  low: parseFloat(candle.low),
+  close: parseFloat(candle.close),
+  volume: parseFloat(candle.volume),
+}));
 
 // Преобразование данных в формат, подходящий для использования нейросетью
 const input = data.map(candle => [candle.open, candle.high, candle.low, candle.close]);
