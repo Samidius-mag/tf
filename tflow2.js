@@ -1,123 +1,78 @@
+const fs = require('fs');
 const tf = require('@tensorflow/tfjs');
-const data = require('./cont.json');
 
-const { features, labels } = prepareData(data);
+const cont = JSON.parse(fs.readFileSync('cont.json'));
 
-function prepareData(data) {
-  const features = [];
-  const labels = [[], [], [], []];
-  for (let i = 24; i < data.length - 24; i++) {
-    const feature = [
-      data[i - 24].close, data[i - 23].close, data[i - 22].close, data[i - 21].close, data[i - 20].close,
-      data[i - 19].close, data[i - 18].close, data[i - 17].close, data[i - 16].close, data[i - 15].close,
-      data[i - 14].close, data[i - 13].close, data[i - 12].close, data[i - 11].close, data[i - 10].close,
-      data[i - 9].close, data[i - 8].close, data[i - 7].close, data[i - 6].close, data[i - 5].close,
-      data[i - 4].close, data[i - 3].close, data[i - 2].close, data[i - 1].close,
-      data[i - 24].volume, data[i - 23].volume, data[i - 22].volume, data[i - 21].volume, data[i - 20].volume,
-      data[i - 19].volume, data[i - 18].volume, data[i - 17].volume, data[i - 16].volume, data[i - 15].volume,
-      data[i - 14].volume, data[i - 13].volume, data[i - 12].volume, data[i - 11].volume, data[i - 10].volume,
-      data[i - 9].volume, data[i - 8].volume, data[i - 7].volume, data[i - 6].volume, data[i - 5].volume,
-      data[i - 4].volume, data[i - 3].volume, data[i - 2].volume, data[i - 1].volume
-    ];
-    features.push(feature);
-    labels[0].push(data[i + 1].close);
-    labels[1].push(data[i + 4].close);
-    labels[2].push(data[i + 12].close);
-    labels[3].push(data[i + 24].close);
-  }
-  return { features, labels };
-}
-
-function predict(model, features, hours) {
-  const lastFeature = features[features.length - 1];
-  let input = tf.tensor2d([lastFeature]);
-  let predictions = [];
-  for (let i = 0; i < hours; i++) {
-    let prediction = model.predict(input);
-    predictions.push(prediction.dataSync()[0]);
-    input = tf.tensor2d([[...lastFeature.slice(2), prediction.dataSync()[0], lastFeature[47]]]);
-    lastFeature.shift();
-    lastFeature.push(prediction.dataSync()[0]);
-  }
-  return predictions;
-}
-
-function calculatePivots(data) {
-  const pivots = [];
-  for (let i = 24; i < data.length - 24; i++) {
-    const high = Math.max(...data.slice(i - 23, i + 1).map(d => d.high));
-    const low = Math.min(...data.slice(i - 23, i + 1).map(d => d.low));
-    const close = data[i].close;
-    const pivot = (high + low + close) / 3;
-    pivots.push(pivot);
-  }
-  return pivots;
-}
-
-function calculateResistanceLevels(data) {
-  const pivots = calculatePivots(data);
-  const resistanceLevels = [];
-  for (let i = 24; i < data.length - 24; i++) {
-    const high = Math.max(...data.slice(i - 23, i + 1).map(d => d.high));
-    const low = Math.min(...data.slice(i - 23, i + 1).map(d => d.low));
-    const pivot = pivots[i - 24];
-    const r1 = 2 * pivot - low;
-    const r2 = pivot + (high - low);
-    const r3 = high + 2 * (pivot - low);
-    resistanceLevels.push([r1, r2, r3]);
-  }
-  return resistanceLevels;
-}
-
-function calculateSupportLevels(data) {
-  const pivots = calculatePivots(data);
-  const supportLevels = [];
-  for (let i = 24; i < data.length - 24; i++) {
-    const high = Math.max(...data.slice(i - 23, i + 1).map(d => d.high));
-    const low = Math.min(...data.slice(i - 23, i + 1).map(d => d.low));
-    const pivot = pivots[i - 24];
-    const s1 = 2 * pivot - high;
-    const s2 = pivot - (high - low);
-    const s3 = low - 2 * (high - pivot);
-    supportLevels.push([s1, s2, s3]);
-  }
-  return supportLevels;
-}
-
-function getTrend(predictions) {
-  const trend = [];
-  for (let i = 0; i < predictions.length - 1; i++) {
-    if (predictions[i] < predictions[i + 1]) {
-      trend.push('Up');
-    } else if (predictions[i] > predictions[i + 1]) {
-      trend.push('Down');
-    } else {
-      trend.push('Flat');
-    }
-  }
-  return trend;
-}
-
-const { features, labels } = prepareData(data);
-
+// Создаем модель нейросети на основе данных из контейнера
 const model = tf.sequential();
-model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [48] }));
-model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
-model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
-model.add(tf.layers.dense({ units: 4 }));
-model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
-console.log('Features:', features);
-const tensorFeatures = tf.tensor(features, [features.length, features[0].length]);
-const tensorLabels = tf.tensor(labels, [labels.length, labels[0].length]);
-model.fit(tensorFeatures, tensorLabels, { epochs: 100 });
+model.add(tf.layers.dense({ units: 4, inputShape: [4] }));
+model.add(tf.layers.dense({ units: 1 }));
+model.setWeights(cont.weights.map(w => tf.tensor(w)));
 
-const predictions = predict(model, features, 24);
-const pivots = calculatePivots(data);
-const resistanceLevels = calculateResistanceLevels(data);
-const supportLevels = calculateSupportLevels(data);
+// Получаем данные о последней свече
+const data = JSON.parse(fs.readFileSync('price.json'));
+const lastCandle = data[data.length - 1];
 
-console.log('Price predictions:', predictions.slice(0, 4));
-console.log('Trend predictions:', getTrend(predictions.slice(0, 4)));
-console.log('Pivot points:', pivots.slice(0, 4));
-console.log('Resistance levels:', resistanceLevels.slice(0, 4));
-console.log('Support levels:', supportLevels.slice(0, 4));
+// Создаем функцию для прогнозирования цены через указанное количество часов
+function predictPrice(hours) {
+  const input = [lastCandle.open, lastCandle.high, lastCandle.low, lastCandle.close];
+  let output = model.predict(tf.tensor2d([input])).dataSync()[0];
+  for (let i = 0; i < hours; i++) {
+    input.shift();
+    input.push(output);
+    output = model.predict(tf.tensor2d([input])).dataSync()[0];
+  }
+  return output;
+}
+
+// Создаем функцию для прогнозирования тренда на указанное количество часов
+function predictTrend(hours) {
+  const price1 = predictPrice(hours);
+  const price2 = predictPrice(hours * 2);
+  return price1 < price2 ? 'up' : 'down';
+}
+
+// Создаем функцию для прогнозирования точек разворота на указанное количество часов
+function predictTurningPoint(hours) {
+  const price1 = predictPrice(hours);
+  const price2 = predictPrice(hours * 2);
+  const price3 = predictPrice(hours * 3);
+  if (price1 < price2 && price2 > price3) {
+    return 'top';
+  } else if (price1 > price2 && price2 < price3) {
+    return 'bottom';
+  } else {
+    return 'none';
+  }
+}
+
+// Создаем функцию для прогнозирования уровней сопротивления и поддержки на указанное количество часов
+function predictSupportResistance(hours) {
+  const price1 = predictPrice(hours);
+  const price2 = predictPrice(hours * 2);
+  const price3 = predictPrice(hours * 3);
+  const price4 = predictPrice(hours * 4);
+  const resistance1 = (price1 + price2 + price3) / 3;
+  const resistance2 = (price2 + price3 + price4) / 3;
+  const support1 = (price1 + price2) / 2;
+  const support2 = (price3 + price4) / 2;
+  return { resistance1, resistance2, support1, support2 };
+}
+
+// Выводим результаты прогнозирования
+console.log('Price after 1 hour:', predictPrice(1));
+console.log('Price after 4 hours:', predictPrice(4));
+console.log('Price after 12 hours:', predictPrice(12));
+console.log('Price after 24 hours:', predictPrice(24));
+console.log('Trend after 1 hour:', predictTrend(1));
+console.log('Trend after 4 hours:', predictTrend(4));
+console.log('Trend after 12 hours:', predictTrend(12));
+console.log('Trend after 24 hours:', predictTrend(24));
+console.log('Turning point after 1 hour:', predictTurningPoint(1));
+console.log('Turning point after 4 hours:', predictTurningPoint(4));
+console.log('Turning point after 12 hours:', predictTurningPoint(12));
+console.log('Turning point after 24 hours:', predictTurningPoint(24));
+console.log('Support and resistance after 1 hour:', predictSupportResistance(1));
+console.log('Support and resistance after 4 hours:', predictSupportResistance(4));
+console.log('Support and resistance after 12 hours:', predictSupportResistance(12));
+console.log('Support and resistance after 24 hours:', predictSupportResistance(24));
