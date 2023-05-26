@@ -1,6 +1,8 @@
 const tf = require('@tensorflow/tfjs');
 const data = require('./cont.json');
 
+const { features, labels } = prepareData(data);
+
 function prepareData(data) {
   const features = [];
   const labels = [[], [], [], []];
