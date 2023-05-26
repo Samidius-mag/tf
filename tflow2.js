@@ -31,7 +31,7 @@ const outputTensor = tf.tensor1d(output);
 
 // Создание модели
 const model = tf.sequential();
-model.add(tf.layers.dense({ units: 64, inputShape: [windowSize], activation: 'relu' }));
+model.add(tf.layers.dense({ units: 128, inputShape: [windowSize], activation: 'relu' }));
 model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
 model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
