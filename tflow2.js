@@ -33,7 +33,7 @@ function predict(model, features, hours) {
   for (let i = 0; i < hours; i++) {
     let prediction = model.predict(input);
     predictions.push(prediction.dataSync()[0]);
-    input = tf.tensor2d([[...lastFeature.slice(2), prediction.dataSync()[0], lastFeature[47]]]]);
+    input = tf.tensor2d([[...lastFeature.slice(2), prediction.dataSync()[0], lastFeature[47]]]);
     lastFeature.shift();
     lastFeature.push(prediction.dataSync()[0]);
   }
