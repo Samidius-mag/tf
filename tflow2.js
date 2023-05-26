@@ -37,7 +37,7 @@ model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
 // Обучение модели
 const epochs = 100;
-const batchSize = 32;
+const batchSize = 64;
 
 model.fit(inputTensor, outputTensor, { epochs, batchSize })
   .then(() => {
