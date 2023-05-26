@@ -1,8 +1,22 @@
-const fs = require('fs');
 const tf = require('@tensorflow/tfjs');
+const fs = require('fs');
 
 // Загрузка данных из файла price.json
-const data = JSON.parse(fs.readFileSync('price.json'));
+const rawData = fs.readFileSync('price.json');
+const data = JSON.parse(rawData).map(candle => ({
+  open: parseFloat(candle.open),
+  high: parseFloat(candle.high),
+  low: parseFloat(candle.low),
+  close: parseFloat(candle.close),
+  volume: parseFloat(candle.volume),
+}));
+
+// Проверка, что массив данных не пустой
+if (data.length === 0) {
+  console.error('Data is empty');
+  process.exit(1);
+}
+
 
 // Преобразование данных в формат, подходящий для обучения нейросети
 const input = data.map(candle => [candle.open, candle.high, candle.low, candle.close]);
