@@ -31,13 +31,13 @@ const outputTensor = tf.tensor1d(output);
 
 // Создание модели
 const model = tf.sequential();
-model.add(tf.layers.dense({ units: 1024, inputShape: [windowSize], activation: 'relu' }));
+model.add(tf.layers.dense({ units: 512, inputShape: [windowSize], activation: 'relu' }));
 model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
 model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
 // Обучение модели
-const epochs = 1000;
-const batchSize = 512;
+const epochs = 200;
+const batchSize = 256;
 
 model.fit(inputTensor, outputTensor, { epochs, batchSize })
   .then(() => {
