@@ -11,7 +11,14 @@ model.add(tf.layers.dense({ units: 1 }));
 model.setWeights(cont.weights.map(w => tf.tensor(w)));
 
 // Получаем данные о последней свече
-const data = JSON.parse(fs.readFileSync('price.json'));
+const rawData = fs.readFileSync('price.json');
+const data = JSON.parse(rawData).map(candle => ({
+  open: parseFloat(candle.open),
+  high: parseFloat(candle.high),
+  low: parseFloat(candle.low),
+  close: parseFloat(candle.close),
+  volume: parseFloat(candle.volume),
+}));
 const lastCandle = data[data.length - 1];
 
 // Создаем функцию для прогнозирования цены через указанное количество часов
