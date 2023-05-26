@@ -104,7 +104,7 @@ model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
 model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
 model.add(tf.layers.dense({ units: 4 }));
 model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
-
+console.log('Features:', features);
 const tensorFeatures = tf.tensor(features, [features.length, features[0].length]);
 const tensorLabels = tf.tensor(labels, [labels.length, labels[0].length]);
 model.fit(tensorFeatures, tensorLabels, { epochs: 100 });
