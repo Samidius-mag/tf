@@ -45,7 +45,10 @@ let support2 = pivot - (high - low);
 let resistance3 = high + 2 * (pivot - low);
 let support3 = low - 2 * (high - pivot);
 for (let i = 1; i < data.length; i++) {
-  if (data[i].high > high) {
+  if (data[i].time - data[i - 1].time >= 86400) {
+    // Если прошло более 24 часов, сохраняем точку разворота
+    pivots.push({ time: data[i - 1].time, pivot, resistance1, support1, resistance2, support2, resistance3, support3 });
+    // Обновляем значения high, low, pivot, resistance1, support1, resistance2, support2, resistance3, support3
     high = data[i].high;
     low = data[i].low;
     pivot = (high + low + data[i].close) / 3;
@@ -55,22 +58,38 @@ for (let i = 1; i < data.length; i++) {
     support2 = pivot - (high - low);
     resistance3 = high + 2 * (pivot - low);
     support3 = low - 2 * (high - pivot);
-  } else if (data[i].low < low) {
-    high = data[i].high;
-    low = data[i].low;
-    pivot = (high + low + data[i].close) / 3;
-    resistance1 = 2 * pivot - low;
-    support1 = 2 * pivot - high;
-    resistance2 = pivot + (high - low);
-    support2 = pivot - (high - low);
-    resistance3 = high + 2 * (pivot - low);
-    support3 = low - 2 * (high - pivot);
+  } else {
+    // Если прошло менее 24 часов, обновляем значения high, low, pivot, resistance1, support1, resistance2, support2, resistance3, support3
+    if (data[i].high > high) {
+      high = data[i].high;
+      low = data[i].low;
+      pivot = (high + low + data[i].close) / 3;
+      resistance1 = 2 * pivot - low;
+      support1 = 2 * pivot - high;
+      resistance2 = pivot + (high - low);
+      support2 = pivot - (high - low);
+      resistance3 = high + 2 * (pivot - low);
+      support3 = low - 2 * (high - pivot);
+    } else if (data[i].low < low) {
+      high = data[i].high;
+      low = data[i].low;
+      pivot = (high + low + data[i].close) / 3;
+      resistance1 = 2 * pivot - low;
+      support1 = 2 * pivot - high;
+      resistance2 = pivot + (high - low);
+      support2 = pivot - (high - low);
+      resistance3 = high + 2 * (pivot - low);
+      support3 = low - 2 * (high - pivot);
+    }
   }
-  pivots.push({ time: data[i].time, pivot, resistance1, support1, resistance2, support2, resistance3, support3 });
+}
+// Сохраняем последнюю точку разворота, если она произошла в течение последних 24 часов
+if (data[data.length - 1].time - data[data.length - 2].time < 86400) {
+  pivots.push({ time: data[data.length - 1].time, pivot, resistance1, support1, resistance2, support2, resistance3, support3 });
 }
 
 // Вывод результатов в консоль
-console.log('Predictions:', predictions);
+console.log('Predictions:', predictions.slice(-15));
 console.log('Trend 1h:', trend1h);
 console.log('Trend 4h:', trend4h);
 console.log('Trend 12h:', trend12h);
