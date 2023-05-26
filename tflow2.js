@@ -2,6 +2,7 @@ const fs = require('fs');
 const tf = require('@tensorflow/tfjs');
 
 const cont = JSON.parse(fs.readFileSync('cont.json'));
+const weights = cont.weights.map(w => tf.tensor(w));
 
 // Создаем модель нейросети на основе данных из контейнера
 const model = tf.sequential();
