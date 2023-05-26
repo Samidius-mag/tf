@@ -16,7 +16,7 @@ const minPrice = Math.min(...prices);
 const maxPrice = Math.max(...prices);
 const normalizedPrices = prices.map(price => (price - minPrice) / (maxPrice - minPrice));
 
-const windowSize = 720;
+const windowSize = 3000;
 const input = [];
 const output = [];
 
