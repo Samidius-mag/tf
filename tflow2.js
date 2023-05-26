@@ -32,11 +32,11 @@ const outputTensor = tf.tensor1d(output);
 // Создание модели
 const model = tf.sequential();
 model.add(tf.layers.dense({ units: 256, inputShape: [windowSize], activation: 'relu' }));
-model.add(tf.layers.dense({ units: 2, activation: 'linear' }));
+model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
 model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
 // Обучение модели
-const epochs = 100;
+const epochs = 200;
 const batchSize = 128;
 
 model.fit(inputTensor, outputTensor, { epochs, batchSize })
