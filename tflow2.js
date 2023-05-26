@@ -90,13 +90,13 @@ model.fit(inputTensor, outputTensor, { epochs, batchSize })
         return 'none';
       }
     };
-
+/*
     console.log('Reversal point predictions:');
     console.log(`1 hour: ${reversalPoints(prices.slice(-windowSize), 1)}`);
     console.log(`4 hours: ${reversalPoints(prices.slice(-windowSize), 4)}`);
     console.log(`12 hours: ${reversalPoints(prices.slice(-windowSize), 12)}`);
     console.log(`24 hours: ${reversalPoints(prices.slice(-windowSize), 24)}`);
-
+*/
     // Уровни сопротивления и поддержки
     const supportResistanceLevels = (input, hours) => {
       const normalizedInput = input.map(price => (price - minPrice) / (maxPrice - minPrice));
@@ -113,9 +113,9 @@ model.fit(inputTensor, outputTensor, { epochs, batchSize })
 
     console.log('Support and resistance levels:');
     console.log(`1 hour: ${JSON.stringify(supportResistanceLevels(prices.slice(-windowSize), 1))}`);
-    console.log(`4 hours: ${JSON.stringify(supportResistanceLevels(prices.slice(-windowSize), 4))}`);
+  /*  console.log(`4 hours: ${JSON.stringify(supportResistanceLevels(prices.slice(-windowSize), 4))}`);
     console.log(`12 hours: ${JSON.stringify(supportResistanceLevels(prices.slice(-windowSize), 12))}`);
-    console.log(`24 hours: ${JSON.stringify(supportResistanceLevels(prices.slice(-windowSize), 24))}`);
+    console.log(`24 hours: ${JSON.stringify(supportResistanceLevels(prices.slice(-windowSize), 24))}`);*/
   })
   .catch(error => {
     console.error(error);
