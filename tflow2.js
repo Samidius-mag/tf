@@ -36,7 +36,7 @@ model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
 model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
 // Обучение модели
-const epochs = 200;
+const epochs = 1000;
 const batchSize = 512;
 
 model.fit(inputTensor, outputTensor, { epochs, batchSize })
