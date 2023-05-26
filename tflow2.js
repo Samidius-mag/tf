@@ -105,8 +105,8 @@ model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
 model.add(tf.layers.dense({ units: 4 }));
 model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
-const tensorFeatures = tf.tensor2d(features);
-const tensorLabels = tf.tensor2d(labels);
+const tensorFeatures = tf.tensor(features, [features.length, features[0].length]);
+const tensorLabels = tf.tensor(labels, [labels.length, labels[0].length]);
 model.fit(tensorFeatures, tensorLabels, { epochs: 100 });
 
 const predictions = predict(model, features, 24);
